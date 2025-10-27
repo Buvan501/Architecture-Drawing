@@ -5,33 +5,16 @@ import ImageWithLoading from './ImageWithLoading';
 const PlansShowcase = () => {
   const [activeCategory, setActiveCategory] = useState('2D-Plans');
 
+  // Use the actual drawing-plan images copied into public/images
   const planCategories = {
-    '2D-Plans': {
+  '2D-Plans': {
       title: '2D Plans',
       description: 'Precise technical drawings with accurate measurements and layouts',
       icon: '📋',
       plans: [
-        {
-          image: '/images/Plans/4358316.jpg',
-          title: 'Modern Floor Plan',
-          area: '2,500 sq ft',
-          price: '₹1,499',
-          features: ['Detailed Layout', 'Accurate Measurements', 'Room Specifications']
-        },
-        {
-          image: '/images/Plans/4a396338-2b0e-494d-b267-599c8b0a2443.jpeg',
-          title: 'Architectural Blueprint',
-          area: '3,200 sq ft',
-          price: '₹1,799',
-          features: ['Structural Details', 'Electrical Layout', 'Plumbing Plan']
-        },
-        {
-          image: '/images/Plans/Free Photo _ View of 3d house model.jpeg',
-          title: 'House Model Design',
-          area: '2,800 sq ft',
-          price: '₹1,599',
-          features: ['3D Perspective', 'Material Specifications', 'Color Scheme']
-        }
+  { image: '/images/Plans/4358316.jpg', title: 'Modern Floor Plan', area: '2,500 sq ft', price: '₹1,499', features: ['Detailed Layout', 'Accurate Measurements', 'Room Specifications'] },
+  { image: '/images/Plans/4a396338-2b0e-494d-b267-599c8b0a2443.jpeg', title: 'Architectural Blueprint', area: '3,200 sq ft', price: '₹1,799', features: ['Structural Details', 'Electrical Layout', 'Plumbing Plan'] },
+  { image: '/images/Plans/free-photo-view-of-3d-house-model.jpeg', title: 'House Model Design', area: '2,800 sq ft', price: '₹1,599', features: ['3D Perspective', 'Material Specifications', 'Color Scheme'] }
       ]
     },
     '3D-Plans': {
@@ -39,76 +22,26 @@ const PlansShowcase = () => {
       description: 'Photorealistic 3D renders that bring your vision to life',
       icon: '🏗️',
       plans: [
-        {
-          image: '/images/3D-Plans/Hotel project.jpg',
-          title: 'Luxury Hotel Design',
-          area: '15,000 sq ft',
-          price: '₹8,500',
-          features: ['Exterior Rendering', 'Interior Design', 'Landscape Planning']
-        },
-        {
-          image: '/images/3D-Plans/Office Building.jpg',
-          title: 'Corporate Office',
-          area: '8,500 sq ft',
-          price: '₹5,200',
-          features: ['Modern Architecture', 'Glass Facade', 'Sustainable Design']
-        },
-        {
-          image: '/images/3D-Plans/Residential Building jpg 1.jpg',
-          title: 'Residential Complex',
-          area: '12,300 sq ft',
-          price: '₹7,200',
-          features: ['Multi-Unit Design', 'Common Areas', 'Parking Solutions']
-        }
+  { image: '/images/3D-Plans/hotel-project.jpg', title: 'Luxury Hotel Design', area: '15,000 sq ft', price: '₹8,500', features: ['Exterior Rendering', 'Interior Design', 'Landscape Planning'] },
+  { image: '/images/3D-Plans/office-building.jpg', title: 'Corporate Office', area: '8,500 sq ft', price: '₹5,200', features: ['Modern Architecture', 'Glass Facade', 'Sustainable Design'] },
+  { image: '/images/3D-Plans/residential-building-jpg-1.jpg', title: 'Residential Complex', area: '12,300 sq ft', price: '₹7,200', features: ['Multi-Unit Design', 'Common Areas', 'Parking Solutions'] }
       ]
     },
     'Elevation': {
       title: 'Elevation',
       description: 'Stunning facade designs and architectural elevations',
       icon: '🏢',
-      plans: [
-        {
-          image: '/images/Elevation/RB.jpg',
-          title: 'Modern Building Elevation',
-          area: '2,800 sq ft',
-          price: '₹2,200',
-          features: ['Facade Design', 'Material Selection', 'Color Coordination']
-        }
-      ]
+  plans: [ { image: '/images/Elevation/RB.jpg', title: 'Modern Building Elevation', area: '2,800 sq ft', price: '₹2,200', features: ['Facade Design', 'Material Selection', 'Color Coordination'] } ]
     },
     'Structural designs': {
       title: 'Structural Designs',
       description: 'Complete structural analysis and detailed engineering drawings',
       icon: '📐',
       plans: [
-        {
-          image: '/images/Structural designs/SD-1.jpg',
-          title: 'Foundation Design',
-          area: '2,500 sq ft',
-          price: '₹1,200',
-          features: ['Load Calculations', 'Foundation Plan', 'Soil Analysis']
-        },
-        {
-          image: '/images/Structural designs/SD-2.jpg',
-          title: 'Beam Layout',
-          area: '3,200 sq ft',
-          price: '₹1,500',
-          features: ['Structural Framework', 'Load Distribution', 'Safety Standards']
-        },
-        {
-          image: '/images/Structural designs/SD-3.jpg',
-          title: 'Column Details',
-          area: '1,800 sq ft',
-          price: '₹1,000',
-          features: ['Column Design', 'Reinforcement Details', 'Connection Plans']
-        },
-        {
-          image: '/images/Structural designs/SD-4.jpg',
-          title: 'Reinforcement Plan',
-          area: '4,100 sq ft',
-          price: '₹1,800',
-          features: ['Steel Specifications', 'Reinforcement Layout', 'Construction Details']
-        }
+  { image: '/images/structural-designs/SD-1.jpg', title: 'Foundation Design', area: '2,500 sq ft', price: '₹1,200', features: ['Load Calculations', 'Foundation Plan', 'Soil Analysis'] },
+  { image: '/images/structural-designs/SD-2.jpg', title: 'Beam Layout', area: '3,200 sq ft', price: '₹1,500', features: ['Structural Framework', 'Load Distribution', 'Safety Standards'] },
+  { image: '/images/structural-designs/SD-3.jpg', title: 'Column Details', area: '1,800 sq ft', price: '₹1,000', features: ['Column Design', 'Reinforcement Details', 'Connection Plans'] },
+  { image: '/images/structural-designs/SD-4.jpg', title: 'Reinforcement Plan', area: '4,100 sq ft', price: '₹1,800', features: ['Steel Specifications', 'Reinforcement Layout', 'Construction Details'] }
       ]
     }
   };

@@ -1,42 +1,10 @@
 import { Link } from 'react-router-dom';
 
 const services = [
-  { 
-    name: '2D Floor Plans', 
-    price: 'starts ₹1,499', 
-    icon: '📐', 
-    route: '/plans/2d',
-    description: 'Precise technical drawings with accurate measurements and layouts',
-    gradient: 'from-blue-500 to-cyan-500',
-    bgImage: '/images/Plans/4358316.jpg'
-  },
-  { 
-    name: '3D Visualizations', 
-    price: 'starts ₹1,999', 
-    icon: '🏗️', 
-    route: '/plans/3d',
-    description: 'Photorealistic 3D renders that bring your vision to life',
-    gradient: 'from-purple-500 to-pink-500',
-    bgImage: '/images/3D-Plans/Hotel project.jpg'
-  },
-  { 
-    name: 'Elevation Designs', 
-    price: 'starts ₹1,999', 
-    icon: '🏢', 
-    route: '/plans/elevation',
-    description: 'Stunning facade designs and architectural elevations',
-    gradient: 'from-green-500 to-teal-500',
-    bgImage: '/images/Elevation/RB.jpg'
-  },
-  { 
-    name: 'Structural Engineering', 
-    price: 'starts ₹1.80/sqft', 
-    icon: '�', 
-    route: '/plans/structural',
-    description: 'Complete structural analysis and detailed engineering drawings',
-    gradient: 'from-orange-500 to-red-500',
-    bgImage: '/images/Structural designs/SD-1.jpg'
-  },
+  { name: '2D Floor Plans', price: 'starts ₹1,499', icon: '📐', route: '/plans/2d', description: 'Precise technical drawings with accurate measurements and layouts', gradient: 'from-blue-500 to-cyan-500', bgImage: '/images/Plans/4358316.jpg' },
+  { name: '3D Visualizations', price: 'starts ₹1,999', icon: '🏗️', route: '/plans/3d', description: 'Photorealistic 3D renders that bring your vision to life', gradient: 'from-purple-500 to-pink-500', bgImage: '/images/3D-Plans/hotel-project.jpg' },
+  { name: 'Elevation Designs', price: 'starts ₹1,999', icon: '🏢', route: '/plans/elevation', description: 'Stunning facade designs and architectural elevations', gradient: 'from-green-500 to-teal-500', bgImage: '/images/Elevation/RB.jpg' },
+  { name: 'Structural Engineering', price: 'starts ₹1.80/sqft', icon: '📐', route: '/plans/structural', description: 'Complete structural analysis and detailed engineering drawings', gradient: 'from-orange-500 to-red-500', bgImage: '/images/structural-designs/SD-1.jpg' }
 ];
 
 const Services = () => {

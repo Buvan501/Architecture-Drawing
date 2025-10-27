@@ -3,20 +3,11 @@ import { useState, useEffect } from 'react';
 const Hero = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
+  // Use a small hero slideshow of 3D plan renders copied into public/images/3D-Plans
   const heroImages = [
-    '/images/3D-Plans/Hotel project.jpg',
-    '/images/3D-Plans/Office Building.jpg',
-    '/images/3D-Plans/Residential Building jpg 1.jpg',
-    '/images/3D-Plans/santhosh render with ganesh.jpg',
-    '/images/3D-Plans/Hotel project.jpg 2.jpg',
-    '/images/3D-Plans/Hotel project.jpg3.jpg',
-    '/images/3D-Plans/Office Building1.jpg',
-    '/images/3D-Plans/Office Building2.jpg',
-    '/images/3D-Plans/Office Building3.jpg',
-    '/images/3D-Plans/Residential Building jpg 2.jpg',
-    '/images/3D-Plans/Residential Building jpg 3.jpg',
-    '/images/3D-Plans/santhosh render with ganesh 2.jpg',
-    '/images/3D-Plans/santhosh render with ganesh 3.jpg'
+    '/images/3D-Plans/hotel-project.jpg',
+    '/images/3D-Plans/office-building.jpg',
+    '/images/3D-Plans/residential-building-jpg-1.jpg'
   ];
 
   useEffect(() => {

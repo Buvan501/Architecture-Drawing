@@ -5,8 +5,6 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import os
 import sqlite3
-import hashlib
-import secrets
 import bcrypt
 from werkzeug.utils import secure_filename
 import uuid
@@ -19,29 +17,91 @@ load_dotenv()
 app = Flask(__name__)
 
 # CORS Configuration
-cors_origins = os.getenv('CORS_ORIGINS', 'http://localhost:3000,http://localhost:5173').split(',')
+cors_origins = os.getenv('CORS_ORIGINS', 'http://localhost:3000,http://localhost:5173')
+cors_origins = [origin.strip() for origin in cors_origins.split(',') if origin.strip()]
 CORS(app, origins=cors_origins, supports_credentials=True)
 
 # JWT Configuration
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'super-secret-key-change-in-production')
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False  # Tokens don't expire for simplicity
+# Keep tokens non-expiring only if you absolutely want to; in prod use a timedelta
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
 jwt = JWTManager(app)
 
-# Rate Limiting
+# Rate Limiting (fixed initialization)
 limiter = Limiter(
-    get_remote_address,
-    app=app,
-    default_limits=["200 per day", "50 per hour"]
+    key_func=get_remote_address,  # identifies clients by their IP
+    default_limits=["200 per day", "50 per hour"],  # set global limits
 )
 
+
+# File upload config
+UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', 'uploads')
+MAX_FILE_SIZE = int(os.getenv('MAX_FILE_SIZE', 16 * 1024 * 1024))  # 16MB
+ALLOWED_EXTENSIONS = os.getenv('ALLOWED_EXTENSIONS', 'png,jpg,jpeg,gif,webp')
+ALLOWED_EXTENSIONS = {ext.strip().lower() for ext in ALLOWED_EXTENSIONS.split(',') if ext.strip()}
+
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# -------------------------
 # Helper functions
-def hash_password(password):
-    """Hash password using bcrypt with salt"""
+# -------------------------
+def hash_password(password: str) -> str:
+    """Hash password using bcrypt with salt and return decoded string."""
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-# Database setup
+def verify_password(plain_password: str, password_hash: str) -> bool:
+    """Verify a plaintext password against stored bcrypt hash."""
+    if not password_hash:
+        return False
+    try:
+        return bcrypt.checkpw(plain_password.encode('utf-8'), password_hash.encode('utf-8'))
+    except Exception:
+        return False
+
+def allowed_file(filename):
+    """Check if file extension is allowed"""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def secure_filename_with_uuid(filename):
+    """Generate secure filename with UUID to prevent conflicts"""
+    if not filename:
+        return None
+    base = secure_filename(filename)
+    name, ext = os.path.splitext(base)
+    unique_name = f"{name}_{uuid.uuid4().hex[:8]}{ext}"
+    return unique_name
+
+def validate_email(email):
+    """Basic email validation"""
+    import re
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(pattern, email) is not None
+
+def validate_password(password):
+    """Password validation"""
+    if not password or len(password) < 6:
+        return False, "Password must be at least 6 characters long"
+    return True, ""
+
+def sanitize_input(text):
+    """Basic input sanitization"""
+    if not text:
+        return ""
+    return str(text).strip()[:500]  # Limit length
+
+# -------------------------
+# Database helpers
+# -------------------------
+DB_PATH = 'plans.db'
+
+def get_db_connection():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
+
 def init_db():
-    conn = sqlite3.connect('plans.db')
+    conn = get_db_connection()
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS plans (
         id INTEGER PRIMARY KEY,
@@ -55,8 +115,7 @@ def init_db():
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )''')
-    
-    # Create users table for both admin and regular users
+
     c.execute('''CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY,
         username TEXT UNIQUE,
@@ -68,102 +127,68 @@ def init_db():
         phone TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )''')
-    
-    # Create settings table
+
     c.execute('''CREATE TABLE IF NOT EXISTS settings (
         id INTEGER PRIMARY KEY,
         key TEXT UNIQUE,
         value TEXT,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )''')
-    
+
     # Insert default settings
     c.execute('''INSERT OR IGNORE INTO settings (key, value) VALUES 
         ('site_title', 'Architectural Drawings'),
         ('contact_email', 'info@archplans.com'),
         ('contact_phone', '+91 98765 43210')
     ''')
-    
+
     # Create indexes for better performance
     c.execute('CREATE INDEX IF NOT EXISTS idx_plans_type ON plans(type)')
     c.execute('CREATE INDEX IF NOT EXISTS idx_plans_created_at ON plans(created_at)')
     c.execute('CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)')
     c.execute('CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)')
     c.execute('CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)')
-    
-    # Insert default admin user
+
+    # Insert default admin user (only if not exists)
     admin_password = hash_password('admin123')
     c.execute('''INSERT OR IGNORE INTO users (username, email, password_hash, role, first_name, last_name) 
-                 VALUES ('admin', 'admin@archplans.com', ?, 'admin', 'Admin', 'User')''', 
+                 VALUES ('admin', 'admin@archplans.com', ?, 'admin', 'Admin', 'User')''',
                  (admin_password,))
-    
     conn.commit()
     conn.close()
 
 init_db()
 
-UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', 'uploads')
-MAX_FILE_SIZE = int(os.getenv('MAX_FILE_SIZE', 16 * 1024 * 1024))  # 16MB
-ALLOWED_EXTENSIONS = set(os.getenv('ALLOWED_EXTENSIONS', 'png,jpg,jpeg,gif,webp').split(','))
-
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-
-def allowed_file(filename):
-    """Check if file extension is allowed"""
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def secure_filename_with_uuid(filename):
-    """Generate secure filename with UUID to prevent conflicts"""
-    if not filename:
-        return None
-    name, ext = os.path.splitext(secure_filename(filename))
-    unique_name = f"{name}_{uuid.uuid4().hex[:8]}{ext}"
-    return unique_name
-
-def validate_email(email):
-    """Basic email validation"""
-    import re
-    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-    return re.match(pattern, email) is not None
-
-def validate_password(password):
-    """Password validation"""
-    if len(password) < 6:
-        return False, "Password must be at least 6 characters long"
-    return True, ""
-
-def sanitize_input(text):
-    """Basic input sanitization"""
-    if not text:
-        return ""
-    return text.strip()[:500]  # Limit length
-
+# -------------------------
+# Routes
+# -------------------------
 @app.route('/api/admin/login', methods=['POST'])
 @limiter.limit("5 per minute")
 def admin_login():
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
-    
-    conn = sqlite3.connect('plans.db')
+    data = request.get_json() or {}
+    username = data.get('username', '')
+    password = data.get('password', '')
+
+    if not username or not password:
+        return jsonify({'error': 'Username and password are required'}), 400
+
+    conn = get_db_connection()
     c = conn.cursor()
     c.execute('SELECT * FROM users WHERE username = ? AND role = ?', (username, 'admin'))
     user = c.fetchone()
     conn.close()
-    
-    if user and verify_password(password, user[3]):
-        access_token = create_access_token(identity={'id': user[0], 'username': user[1], 'role': user[4]})
+
+    if user and verify_password(password, user['password_hash']):
+        access_token = create_access_token(identity={'id': user['id'], 'username': user['username'], 'role': user['role']})
         return jsonify({
             'access_token': access_token,
             'user': {
-                'id': user[0],
-                'username': user[1],
-                'email': user[2],
-                'role': user[4],
-                'first_name': user[5],
-                'last_name': user[6]
+                'id': user['id'],
+                'username': user['username'],
+                'email': user['email'],
+                'role': user['role'],
+                'first_name': user['first_name'],
+                'last_name': user['last_name']
             }
         })
     return jsonify({'error': 'Invalid admin credentials'}), 401
@@ -171,28 +196,31 @@ def admin_login():
 @app.route('/api/user/login', methods=['POST'])
 @limiter.limit("10 per minute")
 def user_login():
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
-    
-    conn = sqlite3.connect('plans.db')
+    data = request.get_json() or {}
+    username_or_email = data.get('username', '')
+    password = data.get('password', '')
+
+    if not username_or_email or not password:
+        return jsonify({'error': 'Username/email and password are required'}), 400
+
+    conn = get_db_connection()
     c = conn.cursor()
-    c.execute('SELECT * FROM users WHERE (username = ? OR email = ?) AND role = ?', (username, username, 'user'))
+    c.execute('SELECT * FROM users WHERE (username = ? OR email = ?) AND role = ?', (username_or_email, username_or_email, 'user'))
     user = c.fetchone()
     conn.close()
-    
-    if user and verify_password(password, user[3]):
-        access_token = create_access_token(identity={'id': user[0], 'username': user[1], 'role': user[4]})
+
+    if user and verify_password(password, user['password_hash']):
+        access_token = create_access_token(identity={'id': user['id'], 'username': user['username'], 'role': user['role']})
         return jsonify({
             'access_token': access_token,
             'user': {
-                'id': user[0],
-                'username': user[1],
-                'email': user[2],
-                'role': user[4],
-                'first_name': user[5],
-                'last_name': user[6],
-                'phone': user[7]
+                'id': user['id'],
+                'username': user['username'],
+                'email': user['email'],
+                'role': user['role'],
+                'first_name': user['first_name'],
+                'last_name': user['last_name'],
+                'phone': user['phone']
             }
         })
     return jsonify({'error': 'Invalid user credentials'}), 401
@@ -200,53 +228,43 @@ def user_login():
 @app.route('/api/user/register', methods=['POST'])
 @limiter.limit("3 per minute")
 def user_register():
-    data = request.get_json()
-    username = data.get('username')
-    email = data.get('email')
-    password = data.get('password')
-    first_name = data.get('first_name')
-    last_name = data.get('last_name')
-    phone = data.get('phone')
-    
+    data = request.get_json() or {}
+    username = sanitize_input(data.get('username', ''))
+    email = sanitize_input(data.get('email', ''))
+    password = data.get('password', '')
+    first_name = sanitize_input(data.get('first_name', ''))
+    last_name = sanitize_input(data.get('last_name', ''))
+    phone = sanitize_input(data.get('phone', ''))
+
     if not all([username, email, password, first_name, last_name]):
         return jsonify({'error': 'All fields are required'}), 400
-    
+
     # Validate email format
     if not validate_email(email):
         return jsonify({'error': 'Invalid email format'}), 400
-    
+
     # Validate password strength
     is_valid, password_error = validate_password(password)
     if not is_valid:
         return jsonify({'error': password_error}), 400
-    
-    # Sanitize inputs
-    username = sanitize_input(username)
-    email = sanitize_input(email)
-    first_name = sanitize_input(first_name)
-    last_name = sanitize_input(last_name)
-    phone = sanitize_input(phone) if phone else ""
-    
-    conn = sqlite3.connect('plans.db')
+
+    conn = get_db_connection()
     c = conn.cursor()
-    
+
     # Check if user already exists
     c.execute('SELECT id FROM users WHERE username = ? OR email = ?', (username, email))
     if c.fetchone():
         conn.close()
         return jsonify({'error': 'Username or email already exists'}), 400
-    
-    # Create new user
+
     password_hash = hash_password(password)
     c.execute('''INSERT INTO users (username, email, password_hash, role, first_name, last_name, phone) 
-                  VALUES (?, ?, ?, 'user', ?, ?, ?)''', 
-                  (username, email, password_hash, first_name, last_name, phone))
-    
+                  VALUES (?, ?, ?, 'user', ?, ?, ?)''',
+              (username, email, password_hash, first_name, last_name, phone))
     user_id = c.lastrowid
     conn.commit()
     conn.close()
-    
-    # Create token for new user
+
     access_token = create_access_token(identity={'id': user_id, 'username': username, 'role': 'user'})
     return jsonify({
         'access_token': access_token,
@@ -265,25 +283,25 @@ def user_register():
 @jwt_required()
 def get_user_profile():
     current_user = get_jwt_identity()
-    if current_user['role'] != 'user':
+    if not current_user or current_user.get('role') != 'user':
         return jsonify({'error': 'Access denied'}), 403
-    
-    conn = sqlite3.connect('plans.db')
+
+    conn = get_db_connection()
     c = conn.cursor()
     c.execute('SELECT * FROM users WHERE id = ?', (current_user['id'],))
     user = c.fetchone()
     conn.close()
-    
+
     if user:
         return jsonify({
-            'id': user[0],
-            'username': user[1],
-            'email': user[2],
-            'role': user[4],
-            'first_name': user[5],
-            'last_name': user[6],
-            'phone': user[7],
-            'created_at': user[8]
+            'id': user['id'],
+            'username': user['username'],
+            'email': user['email'],
+            'role': user['role'],
+            'first_name': user['first_name'],
+            'last_name': user['last_name'],
+            'phone': user['phone'],
+            'created_at': user['created_at']
         })
     return jsonify({'error': 'User not found'}), 404
 
@@ -291,19 +309,23 @@ def get_user_profile():
 @jwt_required()
 def update_user_profile():
     current_user = get_jwt_identity()
-    if current_user['role'] != 'user':
+    if not current_user or current_user.get('role') != 'user':
         return jsonify({'error': 'Access denied'}), 403
-    
-    data = request.get_json()
-    conn = sqlite3.connect('plans.db')
+
+    data = request.get_json() or {}
+    email = sanitize_input(data.get('email', ''))
+    first_name = sanitize_input(data.get('first_name', ''))
+    last_name = sanitize_input(data.get('last_name', ''))
+    phone = sanitize_input(data.get('phone', ''))
+
+    if email and not validate_email(email):
+        return jsonify({'error': 'Invalid email format'}), 400
+
+    conn = get_db_connection()
     c = conn.cursor()
-    
-    # Update user profile
     c.execute('''UPDATE users SET first_name = ?, last_name = ?, phone = ?, email = ? 
-                  WHERE id = ?''', 
-                  (data.get('first_name'), data.get('last_name'), data.get('phone'), 
-                   data.get('email'), current_user['id']))
-    
+                  WHERE id = ?''',
+              (first_name, last_name, phone, email, current_user['id']))
     conn.commit()
     conn.close()
     return jsonify({'message': 'Profile updated successfully'})
@@ -311,27 +333,35 @@ def update_user_profile():
 # Legacy login endpoint for backward compatibility
 @app.route('/api/login', methods=['POST'])
 def legacy_login():
-    data = request.get_json()
+    data = request.get_json() or {}
     if data.get('username') == 'admin' and data.get('password') == 'admin123':
         access_token = create_access_token(identity={'id': 1, 'username': 'admin', 'role': 'admin'})
         return jsonify(access_token=access_token)
     return jsonify({'error': 'Invalid credentials'}), 401
 
-@app.route('/uploads/<filename>')
+@app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
+    # send_from_directory will raise a 404 if file not found
     return send_from_directory(UPLOAD_FOLDER, filename)
 
 @app.route('/api/plans', methods=['GET'])
 def get_plans():
-    # Added pagination and filtering support
+    # Pagination and filtering support
     type_filter = request.args.get('type')
-    page = int(request.args.get('page', 1))
-    per_page = int(request.args.get('per_page', 12))
+    try:
+        page = int(request.args.get('page', 1))
+    except ValueError:
+        page = 1
+    try:
+        per_page = int(request.args.get('per_page', 12))
+    except ValueError:
+        per_page = 12
+
     min_price = request.args.get('min_price')
     max_price = request.args.get('max_price')
     search = request.args.get('search')
 
-    conn = sqlite3.connect('plans.db')
+    conn = get_db_connection()
     c = conn.cursor()
 
     base_query = "SELECT * FROM plans"
@@ -369,80 +399,90 @@ def get_plans():
     plans = c.fetchall()
     conn.close()
 
-    data = [{'id': p[0], 'type': p[1], 'title': p[2], 'image_path': p[3], 'price': p[4], 'description': p[5], 'area': p[6], 'features': p[7], 'created_at': p[8], 'updated_at': p[9]} for p in plans]
+    data = [{'id': p['id'], 'type': p['type'], 'title': p['title'], 'image_path': p['image_path'],
+             'price': p['price'], 'description': p['description'], 'area': p['area'],
+             'features': p['features'], 'created_at': p['created_at'], 'updated_at': p['updated_at']} for p in plans]
     return jsonify({'data': data, 'total': total, 'page': page, 'per_page': per_page})
 
 @app.route('/api/plans', methods=['POST'])
 @jwt_required()
 def add_plan():
     current_user = get_jwt_identity()
-    if current_user['role'] != 'admin':
+    if not current_user or current_user.get('role') != 'admin':
         return jsonify({'error': 'Admin access required'}), 403
-    data = request.form
+
+    data = request.form or {}
     file = request.files.get('image')
     image_path = ''
-    
+
+    # Basic required fields validation
+    title = sanitize_input(data.get('title', ''))
+    plan_type = sanitize_input(data.get('type', ''))
+    price = sanitize_input(data.get('price', ''))
+    description = sanitize_input(data.get('description', ''))
+
+    if not all([title, plan_type, price]):
+        return jsonify({'error': 'type, title and price are required'}), 400
+
     if file and file.filename:
         # Validate file
         if not allowed_file(file.filename):
-            return jsonify({'error': 'Invalid file type. Only PNG, JPG, JPEG, GIF, and WebP are allowed.'}), 400
-        
+            return jsonify({'error': f'Invalid file type. Allowed: {", ".join(sorted(ALLOWED_EXTENSIONS))}.'}), 400
+
         # Check file size
-        file.seek(0, 2)  # Seek to end
-        file_size = file.tell()
-        file.seek(0)  # Reset to beginning
-        
+        file.stream.seek(0, 2)  # Seek to end
+        file_size = file.stream.tell()
+        file.stream.seek(0)  # Reset to beginning
+
         if file_size > MAX_FILE_SIZE:
-            return jsonify({'error': 'File too large. Maximum size is 16MB.'}), 400
-        
-        # Generate secure filename
+            return jsonify({'error': f'File too large. Maximum size is {MAX_FILE_SIZE} bytes.'}), 400
+
         filename = secure_filename_with_uuid(file.filename)
         if filename:
             file_path = os.path.join(UPLOAD_FOLDER, filename)
             file.save(file_path)
-            image_path = f'/uploads/{filename}'  # Use relative URL
-    conn = sqlite3.connect('plans.db')
+            image_path = f'/uploads/{filename}'
+        else:
+            return jsonify({'error': 'Invalid filename'}), 400
+
+    conn = get_db_connection()
     c = conn.cursor()
     c.execute("INSERT INTO plans (type, title, image_path, price, description, area, features) VALUES (?, ?, ?, ?, ?, ?, ?)",
-              (data['type'], data['title'], image_path, data['price'], data['description'], 
-               data.get('area', ''), data.get('features', '')))
+              (plan_type, title, image_path, price, description,
+               sanitize_input(data.get('area', '')), sanitize_input(data.get('features', ''))))
     conn.commit()
     conn.close()
     return jsonify({'message': 'Plan added'})
 
-
 @app.route('/api/plans/recent', methods=['GET'])
 def recent_plans():
-    # return latest N plans
     limit = int(request.args.get('limit', 6))
-    conn = sqlite3.connect('plans.db')
+    conn = get_db_connection()
     c = conn.cursor()
     c.execute("SELECT * FROM plans ORDER BY id DESC LIMIT ?", (limit,))
     plans = c.fetchall()
     conn.close()
-    data = [{'id': p[0], 'type': p[1], 'title': p[2], 'image_path': p[3], 'price': p[4], 'description': p[5], 'area': p[6], 'features': p[7], 'created_at': p[8], 'updated_at': p[9]} for p in plans]
+    data = [{'id': p['id'], 'type': p['type'], 'title': p['title'], 'image_path': p['image_path'],
+             'price': p['price'], 'description': p['description'], 'area': p['area'],
+             'features': p['features'], 'created_at': p['created_at'], 'updated_at': p['updated_at']} for p in plans]
     return jsonify(data)
-
 
 @app.route('/api/analytics', methods=['GET'])
 def analytics():
-    conn = sqlite3.connect('plans.db')
+    conn = get_db_connection()
     c = conn.cursor()
-    
-    # Get counts by type
+
     c.execute("SELECT type, COUNT(*) FROM plans GROUP BY type")
     type_counts = dict(c.fetchall())
-    
-    # Get total plans
+
     c.execute("SELECT COUNT(*) FROM plans")
     total_plans = c.fetchone()[0]
-    
-    # Get recent activity (plans added in last 30 days)
+
     c.execute("SELECT COUNT(*) FROM plans WHERE created_at >= datetime('now', '-30 days')")
     recent_plans = c.fetchone()[0]
-    
+
     conn.close()
-    
+
     return jsonify({
         'total_plans': total_plans,
         'recent_plans': recent_plans,
@@ -453,41 +493,56 @@ def analytics():
 @jwt_required()
 def update_plan(id):
     current_user = get_jwt_identity()
-    if current_user['role'] != 'admin':
+    if not current_user or current_user.get('role') != 'admin':
         return jsonify({'error': 'Admin access required'}), 403
-    data = request.form
+
+    data = request.form or {}
     file = request.files.get('image')
-    conn = sqlite3.connect('plans.db')
+
+    conn = get_db_connection()
     c = conn.cursor()
-    
+
+    # Fetch existing plan to ensure it exists
+    c.execute("SELECT * FROM plans WHERE id = ?", (id,))
+    existing = c.fetchone()
+    if not existing:
+        conn.close()
+        return jsonify({'error': 'Plan not found'}), 404
+
+    title = sanitize_input(data.get('title', existing['title']))
+    plan_type = sanitize_input(data.get('type', existing['type']))
+    price = sanitize_input(data.get('price', existing['price']))
+    description = sanitize_input(data.get('description', existing['description']))
+    area = sanitize_input(data.get('area', existing['area']))
+    features = sanitize_input(data.get('features', existing['features']))
+
     if file and file.filename:
-        # Validate file
         if not allowed_file(file.filename):
-            return jsonify({'error': 'Invalid file type. Only PNG, JPG, JPEG, GIF, and WebP are allowed.'}), 400
-        
-        # Check file size
-        file.seek(0, 2)  # Seek to end
-        file_size = file.tell()
-        file.seek(0)  # Reset to beginning
-        
+            conn.close()
+            return jsonify({'error': f'Invalid file type. Allowed: {", ".join(sorted(ALLOWED_EXTENSIONS))}.'}), 400
+
+        file.stream.seek(0, 2)
+        file_size = file.stream.tell()
+        file.stream.seek(0)
+
         if file_size > MAX_FILE_SIZE:
-            return jsonify({'error': 'File too large. Maximum size is 16MB.'}), 400
-        
-        # Generate secure filename
+            conn.close()
+            return jsonify({'error': f'File too large. Maximum size is {MAX_FILE_SIZE} bytes.'}), 400
+
         filename = secure_filename_with_uuid(file.filename)
         if filename:
             file_path = os.path.join(UPLOAD_FOLDER, filename)
             file.save(file_path)
-            image_path = f'/uploads/{filename}'  # Use relative URL
+            image_path = f'/uploads/{filename}'
             c.execute("UPDATE plans SET type=?, title=?, image_path=?, price=?, description=?, area=?, features=?, updated_at=CURRENT_TIMESTAMP WHERE id=?",
-                      (data['type'], data['title'], image_path, data['price'], data['description'], 
-                       data.get('area', ''), data.get('features', ''), id))
+                      (plan_type, title, image_path, price, description, area, features, id))
         else:
+            conn.close()
             return jsonify({'error': 'Invalid filename'}), 400
     else:
         c.execute("UPDATE plans SET type=?, title=?, price=?, description=?, area=?, features=?, updated_at=CURRENT_TIMESTAMP WHERE id=?",
-                  (data['type'], data['title'], data['price'], data['description'], 
-                   data.get('area', ''), data.get('features', ''), id))
+                  (plan_type, title, price, description, area, features, id))
+
     conn.commit()
     conn.close()
     return jsonify({'message': 'Plan updated'})
@@ -496,49 +551,53 @@ def update_plan(id):
 @jwt_required()
 def delete_plan(id):
     current_user = get_jwt_identity()
-    if current_user['role'] != 'admin':
+    if not current_user or current_user.get('role') != 'admin':
         return jsonify({'error': 'Admin access required'}), 403
-    conn = sqlite3.connect('plans.db')
+
+    conn = get_db_connection()
     c = conn.cursor()
     c.execute("DELETE FROM plans WHERE id=?", (id,))
+    deleted = c.rowcount
     conn.commit()
     conn.close()
-    return jsonify({'message': 'Plan deleted'})
+
+    if deleted:
+        return jsonify({'message': 'Plan deleted'})
+    return jsonify({'error': 'Plan not found'}), 404
 
 @app.route('/api/plans/bulk-delete', methods=['POST'])
 @jwt_required()
 def bulk_delete_plans():
     current_user = get_jwt_identity()
-    if current_user['role'] != 'admin':
+    if not current_user or current_user.get('role') != 'admin':
         return jsonify({'error': 'Admin access required'}), 403
-    data = request.get_json()
+    data = request.get_json() or {}
     plan_ids = data.get('ids', [])
-    
-    if not plan_ids:
-        return jsonify({'error': 'No plans selected'}), 400
-    
-    conn = sqlite3.connect('plans.db')
+
+    if not plan_ids or not isinstance(plan_ids, list):
+        return jsonify({'error': 'No plans selected or invalid payload'}), 400
+
+    conn = get_db_connection()
     c = conn.cursor()
-    
+
     placeholders = ','.join(['?' for _ in plan_ids])
     c.execute(f"DELETE FROM plans WHERE id IN ({placeholders})", plan_ids)
-    
     deleted_count = c.rowcount
     conn.commit()
     conn.close()
-    
+
     return jsonify({'message': f'{deleted_count} plans deleted'})
 
 @app.route('/api/settings', methods=['GET'])
 @jwt_required()
 def get_settings():
     current_user = get_jwt_identity()
-    if current_user['role'] != 'admin':
+    if not current_user or current_user.get('role') != 'admin':
         return jsonify({'error': 'Admin access required'}), 403
-    conn = sqlite3.connect('plans.db')
+    conn = get_db_connection()
     c = conn.cursor()
     c.execute("SELECT key, value FROM settings")
-    settings = dict(c.fetchall())
+    settings = {row['key']: row['value'] for row in c.fetchall()}
     conn.close()
     return jsonify(settings)
 
@@ -546,16 +605,19 @@ def get_settings():
 @jwt_required()
 def update_settings():
     current_user = get_jwt_identity()
-    if current_user['role'] != 'admin':
+    if not current_user or current_user.get('role') != 'admin':
         return jsonify({'error': 'Admin access required'}), 403
-    data = request.get_json()
-    conn = sqlite3.connect('plans.db')
+    data = request.get_json() or {}
+    if not isinstance(data, dict):
+        return jsonify({'error': 'Invalid payload'}), 400
+
+    conn = get_db_connection()
     c = conn.cursor()
-    
+
     for key, value in data.items():
         c.execute("INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)",
                   (key, value))
-    
+
     conn.commit()
     conn.close()
     return jsonify({'message': 'Settings updated'})
@@ -564,36 +626,39 @@ def update_settings():
 @jwt_required()
 def dashboard_stats():
     current_user = get_jwt_identity()
-    if current_user['role'] != 'admin':
+    if not current_user or current_user.get('role') != 'admin':
         return jsonify({'error': 'Admin access required'}), 403
-    conn = sqlite3.connect('plans.db')
+
+    conn = get_db_connection()
     c = conn.cursor()
-    
-    # Total plans
+
     c.execute("SELECT COUNT(*) FROM plans")
     total_plans = c.fetchone()[0]
-    
-    # Plans by type
+
     c.execute("SELECT type, COUNT(*) FROM plans GROUP BY type")
     plans_by_type = dict(c.fetchall())
-    
-    # Recent plans (last 7 days)
+
     c.execute("SELECT COUNT(*) FROM plans WHERE created_at >= datetime('now', '-7 days')")
     recent_plans = c.fetchone()[0]
-    
-    # Most popular plan type
+
     c.execute("SELECT type, COUNT(*) as count FROM plans GROUP BY type ORDER BY count DESC LIMIT 1")
-    popular_type = c.fetchone()
-    
+    popular_type_row = c.fetchone()
+
     conn.close()
-    
+
+    popular_type = popular_type_row['type'] if popular_type_row else None
+    popular_type_count = popular_type_row['count'] if popular_type_row else 0
+
     return jsonify({
         'total_plans': total_plans,
         'plans_by_type': plans_by_type,
         'recent_plans': recent_plans,
-        'popular_type': popular_type[0] if popular_type else None,
-        'popular_type_count': popular_type[1] if popular_type else 0
+        'popular_type': popular_type,
+        'popular_type_count': popular_type_count
     })
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    limiter.init_app(app)  # attach limiter to the Flask app
+    # When running locally use the PORT env var if set (Cloud Run sets this).
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port, debug=True)

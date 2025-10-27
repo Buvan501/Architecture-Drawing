@@ -5,3 +5,4 @@ flask-limiter
 bcrypt
 python-dotenv
 werkzeug
+gunicorn

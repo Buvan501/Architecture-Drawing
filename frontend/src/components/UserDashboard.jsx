@@ -233,7 +233,7 @@ const UserDashboard = () => {
                   >
                     <div className="relative overflow-hidden aspect-[4/3]">
                       <img
-                        src={plan.image_path || '/images/placeholder.jpg'}
+                        src={plan.image_path || '/images/Placeholder/placeholder.svg'}
                         alt={plan.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />

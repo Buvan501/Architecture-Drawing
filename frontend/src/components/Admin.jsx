@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
+import { validateForm, handleApiError, getFilteredPlans, getPaginatedPlans } from '../utils/adminUtils';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import Pagination from '../components/common/Pagination';
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -18,11 +21,17 @@ const Admin = () => {
     contact_email: 'info@archplans.com',
     contact_phone: '+91 98765 43210'
   });
+  const [selectedPlans, setSelectedPlans] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
-    if (!localStorage.getItem('token')) {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('You are not authorized to access this page. Please log in.');
       navigate('/admin-login');
     } else {
+      // Optionally, verify the token with the server
       fetchData();
     }
   }, [navigate]);
@@ -39,13 +48,14 @@ const Admin = () => {
       setAnalytics(analyticsRes.data.by_type || analyticsRes.data);
       setSettings(settingsRes.data);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      handleApiError(error);
     }
     setLoading(false);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm(form)) return; // Validate form before submission
     setLoading(true);
     const formData = new FormData();
     formData.append('type', form.type);
@@ -65,7 +75,7 @@ const Admin = () => {
       await fetchData();
       resetForm();
     } catch (error) {
-      console.error('Error saving plan:', error);
+      handleApiError(error);
     }
     setLoading(false);
   };
@@ -90,13 +100,13 @@ const Admin = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this plan?')) {
+    if (window.confirm('Are you sure you want to delete this plan? This action cannot be undone.')) {
       setLoading(true);
       try {
         await api.delete(`/plans/${id}`);
         await fetchData();
       } catch (error) {
-        console.error('Error deleting plan:', error);
+        handleApiError(error);
       }
       setLoading(false);
     }
@@ -104,14 +114,14 @@ const Admin = () => {
 
   const handleBulkDelete = async () => {
     if (selectedPlans.length === 0) return;
-    if (window.confirm(`Are you sure you want to delete ${selectedPlans.length} plans?`)) {
+    if (window.confirm(`Are you sure you want to delete ${selectedPlans.length} plans? This action cannot be undone.`)) {
       setLoading(true);
       try {
         await api.post('/plans/bulk-delete', { ids: selectedPlans });
         setSelectedPlans([]);
         await fetchData();
       } catch (error) {
-        console.error('Error deleting plans:', error);
+        handleApiError(error);
       }
       setLoading(false);
     }
@@ -126,7 +136,7 @@ const Admin = () => {
   };
 
   const handleSelectAll = () => {
-    const filteredPlans = getFilteredPlans();
+    const filteredPlans = getFilteredPlans(plans, searchTerm, filterType);
     setSelectedPlans(
       selectedPlans.length === filteredPlans.length 
         ? [] 
@@ -134,13 +144,10 @@ const Admin = () => {
     );
   };
 
-  const getFilteredPlans = () => {
-    return plans.filter(plan => {
-      const matchesSearch = plan.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           plan.description.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesFilter = filterType === 'all' || plan.type === filterType;
-      return matchesSearch && matchesFilter;
-    });
+  const totalPages = Math.ceil(getFilteredPlans(plans, searchTerm, filterType).length / itemsPerPage);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
   };
 
   const handleSettingsUpdate = async () => {
@@ -166,8 +173,6 @@ const Admin = () => {
     { id: 'analytics', label: 'Analytics', icon: '📈' },
     { id: 'settings', label: 'Settings', icon: '⚙️' }
   ];
-
-  const filteredPlans = getFilteredPlans();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -421,7 +426,7 @@ const Admin = () => {
                         <th className="text-left py-3">
                           <input
                             type="checkbox"
-                            checked={selectedPlans.length === filteredPlans.length && filteredPlans.length > 0}
+                            checked={selectedPlans.length === plans.length && plans.length > 0}
                             onChange={handleSelectAll}
                             className="rounded border-gray-300"
                           />
@@ -434,7 +439,7 @@ const Admin = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredPlans.map((plan) => (
+                      {getPaginatedPlans(plans, searchTerm, filterType, currentPage, itemsPerPage).map((plan) => (
                         <tr key={plan.id} className="border-b border-gray-100">
                           <td className="py-4">
                             <input
@@ -481,6 +486,15 @@ const Admin = () => {
                       ))}
                     </tbody>
                   </table>
+                </div>
+
+                {/* Pagination */}
+                <div className="mt-4 flex justify-center">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
                 </div>
               </div>
             </div>
@@ -634,6 +648,8 @@ const Admin = () => {
           </div>
         )}
       </div>
+
+      {loading && <LoadingSpinner />}
     </div>
   );
 };

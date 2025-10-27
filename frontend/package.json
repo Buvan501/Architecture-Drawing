@@ -4,10 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+  "dev": "vite",
+  "build": "vite build",
+  "lint": "eslint .",
+  "preview": "vite preview",
+  "copy-placeholders": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/copy_placeholders.ps1",
+  "copy-drawing-plans": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/copy_drawing_plans.ps1",
+  "normalize-images": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/normalize_images.ps1 && node ./scripts/auto_update_refs.cjs",
+  "deploy:firebase": "npm run build && npx firebase deploy --only hosting"
   },
   "dependencies": {
     "axios": "^1.12.2",

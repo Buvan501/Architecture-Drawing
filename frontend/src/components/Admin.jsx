@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { validateForm, handleApiError, getFilteredPlans, getPaginatedPlans } from '../utils/adminUtils';
+import { toast } from 'react-toastify';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import Pagination from '../components/common/Pagination';
 
@@ -30,7 +31,7 @@ const Admin = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('You are not authorized to access this page. Please log in.');
+      toast.error('You are not authorized to access this page. Please log in.');
       navigate('/admin-login');
     } else {
       // Optionally, verify the token with the server
@@ -50,7 +51,8 @@ const Admin = () => {
       setAnalytics(analyticsRes.data.by_type || analyticsRes.data);
       setSettings(settingsRes.data);
     } catch (error) {
-      handleApiError(error);
+      const msg = handleApiError(error);
+      toast.error(msg);
     }
     setLoading(false);
   };
@@ -87,7 +89,8 @@ const Admin = () => {
       await fetchData();
       resetForm();
     } catch (error) {
-      handleApiError(error);
+      const msg = handleApiError(error);
+      toast.error(msg);
     }
     setLoading(false);
   };
@@ -120,7 +123,8 @@ const Admin = () => {
         await api.delete(`/plans/${id}`);
         await fetchData();
       } catch (error) {
-        handleApiError(error);
+        const msg = handleApiError(error);
+        toast.error(msg);
       }
       setLoading(false);
     }
@@ -128,14 +132,15 @@ const Admin = () => {
 
   const handleBulkDelete = async () => {
     if (selectedPlans.length === 0) return;
-    if (window.confirm(`Are you sure you want to delete ${selectedPlans.length} plans? This action cannot be undone.`)) {
+      if (window.confirm(`Are you sure you want to delete ${selectedPlans.length} plans? This action cannot be undone.`)) {
       setLoading(true);
       try {
         await api.post('/plans/bulk-delete', { ids: selectedPlans });
         setSelectedPlans([]);
         await fetchData();
       } catch (error) {
-        handleApiError(error);
+        const msg = handleApiError(error);
+        toast.error(msg);
       }
       setLoading(false);
     }

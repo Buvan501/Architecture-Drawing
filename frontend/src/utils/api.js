@@ -24,6 +24,19 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // simple retry logic for transient network/server errors
+    const config = error.config || {};
+    config.__retryCount = config.__retryCount || 0;
+    const maxRetries = 2;
+
+    const shouldRetry = !error.response || (error.response.status >= 500 && config.__retryCount < maxRetries);
+
+    if (shouldRetry) {
+      config.__retryCount += 1;
+      const delay = 200 * Math.pow(2, config.__retryCount);
+      return new Promise((resolve) => setTimeout(resolve, delay)).then(() => api(config));
+    }
+
     if (error.response?.status === 401) {
       // Token expired or invalid
       localStorage.removeItem('token');

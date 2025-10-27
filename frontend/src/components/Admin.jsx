@@ -12,6 +12,8 @@ const Admin = () => {
   const [analytics, setAnalytics] = useState({});
   const [form, setForm] = useState({ type: '', title: '', price: '', description: '', area: '', features: '' });
   const [file, setFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -64,13 +66,23 @@ const Admin = () => {
     formData.append('description', form.description);
     formData.append('area', form.area);
     formData.append('features', form.features);
-    if (file) formData.append('image', file);
+  if (file) formData.append('image', file);
 
     try {
       if (editing) {
-        await api.put(`/plans/${editing}`, formData);
+        await api.put(`/plans/${editing}`, formData, {
+          onUploadProgress: (progressEvent) => {
+            const percent = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
+            setUploadProgress(percent);
+          }
+        });
       } else {
-        await api.post('/plans', formData);
+        await api.post('/plans', formData, {
+          onUploadProgress: (progressEvent) => {
+            const percent = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
+            setUploadProgress(percent);
+          }
+        });
       }
       await fetchData();
       resetForm();
@@ -84,6 +96,8 @@ const Admin = () => {
     setForm({ type: '', title: '', price: '', description: '', area: '', features: '' });
     setFile(null);
     setEditing(null);
+    setPreviewUrl(null);
+    setUploadProgress(0);
   };
 
   const handleEdit = (plan) => {
@@ -346,12 +360,37 @@ const Admin = () => {
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Image</label>
-                  <input 
-                    type="file" 
-                    onChange={(e) => setFile(e.target.files[0])} 
-                    className="w-full p-3 border border-gray-200 focus:border-black focus:outline-none" 
-                    accept="image/*"
-                  />
+                  <div>
+                    <input 
+                      type="file" 
+                      onChange={(e) => {
+                        const f = e.target.files[0];
+                        setFile(f);
+                        if (f) {
+                          const url = URL.createObjectURL(f);
+                          setPreviewUrl(url);
+                        } else {
+                          setPreviewUrl(null);
+                        }
+                      }}
+                      className="w-full p-3 border border-gray-200 focus:border-black focus:outline-none" 
+                      accept="image/*"
+                    />
+                    {previewUrl && (
+                      <div className="mt-3">
+                        <p className="text-sm text-gray-600 mb-2">Image preview:</p>
+                        <img src={previewUrl} alt="preview" className="w-48 h-32 object-cover border border-gray-200" />
+                      </div>
+                    )}
+                    {uploadProgress > 0 && uploadProgress < 100 && (
+                      <div className="mt-2">
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="bg-black h-2 rounded-full" style={{ width: `${uploadProgress}%` }} />
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">Uploading: {uploadProgress}%</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="md:col-span-2 flex space-x-4">
                   <button 

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
+import { useAuth } from '../contexts/AuthContext';
+import { toast } from 'react-toastify';
 
 const AdminLogin = () => {
   const [form, setForm] = useState({
@@ -10,6 +12,7 @@ const AdminLogin = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,11 +25,14 @@ const AdminLogin = () => {
         password: form.password
       });
       
-      localStorage.setItem('token', response.data.access_token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      navigate('/admin');
+  // Use context login so all components update
+  login({ token: response.data.access_token, user: response.data.user });
+  navigate('/admin');
+  toast.success('Welcome back!');
     } catch (err) {
-      setError(err.response?.data?.error || 'Invalid admin credentials');
+  const message = err.response?.data?.error || 'Invalid admin credentials';
+  setError(message);
+  toast.error(message);
     }
     setLoading(false);
   };

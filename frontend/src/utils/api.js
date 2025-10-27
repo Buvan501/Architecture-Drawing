@@ -1,7 +1,15 @@
 import axios from 'axios';
 
+const getBaseUrl = () => {
+  if (typeof window === 'undefined') return 'http://localhost:5000/api';
+  const host = window.location.hostname;
+  // Use relative /api in production so Hosting rewrites can proxy to backend
+  if (host === 'localhost' || host === '127.0.0.1') return 'http://localhost:5000/api';
+  return '/api';
+};
+
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: getBaseUrl(),
 });
 
 api.interceptors.request.use((config) => {

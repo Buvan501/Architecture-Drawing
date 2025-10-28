@@ -43,7 +43,7 @@ const Header = () => {
             <div className="flex-shrink-0">
               <Link to="/" className="flex items-center space-x-3">
                 <h1 className={`text-lg font-medium ${dark ? 'text-white' : 'text-black'}`}>
-                  Architectural Drawings
+                  De-Zine Cube
                 </h1>
               </Link>
             </div>

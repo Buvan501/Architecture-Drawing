@@ -45,11 +45,11 @@ const Hero = () => {
       <div className="relative z-10 flex items-center justify-center h-full px-6">
         <div className="text-center text-white max-w-3xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-light mb-6 leading-tight">
-            Architectural Excellence
+            De-Zine Cube
           </h1>
           
           <p className="text-lg md:text-xl mb-12 text-gray-300">
-            Transform your vision into reality
+            Design your Dream Space
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

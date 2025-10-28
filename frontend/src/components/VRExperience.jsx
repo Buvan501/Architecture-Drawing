@@ -100,9 +100,9 @@ const VRExperience = () => {
                 
                 {/* Sample VR Cards for Demo */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-4xl mx-auto">
-                  <div className="border border-gray-200 overflow-hidden">
-                    <div className="aspect-[4/3] bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
-                      <span className="text-6xl">🏢</span>
+                  <div className="group border border-gray-200 overflow-hidden hover:border-black transition-colors">
+                    <div className="aspect-[4/3] bg-gray-50 flex items-center justify-center group-hover:bg-gray-100 transition-colors">
+                      <span className="text-6xl text-gray-400">🏢</span>
                     </div>
                     <div className="p-6">
                       <h3 className="text-lg font-medium text-black mb-2">Modern Office VR</h3>
@@ -115,9 +115,9 @@ const VRExperience = () => {
                     </div>
                   </div>
                   
-                  <div className="border border-gray-200 overflow-hidden">
-                    <div className="aspect-[4/3] bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
-                      <span className="text-6xl">🏠</span>
+                  <div className="group border border-gray-200 overflow-hidden hover:border-black transition-colors">
+                    <div className="aspect-[4/3] bg-gray-50 flex items-center justify-center group-hover:bg-gray-100 transition-colors">
+                      <span className="text-6xl text-gray-400">🏠</span>
                     </div>
                     <div className="p-6">
                       <h3 className="text-lg font-medium text-black mb-2">Residential VR</h3>
@@ -130,9 +130,9 @@ const VRExperience = () => {
                     </div>
                   </div>
                   
-                  <div className="border border-gray-200 overflow-hidden">
-                    <div className="aspect-[4/3] bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center">
-                      <span className="text-6xl">🏨</span>
+                  <div className="group border border-gray-200 overflow-hidden hover:border-black transition-colors">
+                    <div className="aspect-[4/3] bg-gray-50 flex items-center justify-center group-hover:bg-gray-100 transition-colors">
+                      <span className="text-6xl text-gray-400">🏨</span>
                     </div>
                     <div className="p-6">
                       <h3 className="text-lg font-medium text-black mb-2">Hotel VR Tour</h3>

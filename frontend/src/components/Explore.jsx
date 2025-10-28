@@ -6,10 +6,10 @@ const Explore = () => {
 
   const planTypes = [
   { type: '2d', title: '2D Plans', description: 'Precise technical drawings with accurate measurements', image: encodeURI('/images/2D-Plans/2D plan (30_X37_)_.jpg'), route: '/plans/2d' },
-  { type: '3d', title: '3D Plans', description: 'Photorealistic 3D renders and visualizations', image: encodeURI('/images/3D-Plans/Hotel project.jpg'), route: '/plans/3d' },
-  { type: 'elevation', title: 'Elevation', description: 'Stunning facade designs and architectural elevations', image: encodeURI('/images/Elevation/Hotel project.jpg'), route: '/plans/elevation' },
+  { type: '3d', title: '3D Plans', description: 'Photorealistic 3D renders and visualizations', image: '/images/3D-Plans/hotel-project.jpg', route: '/plans/3d' },
+  { type: 'elevation', title: 'Elevation', description: 'Stunning facade designs and architectural elevations', image: '/images/Elevation/Hotel project.jpg', route: '/plans/elevation' },
   { type: 'structural', title: 'Structural Designs', description: 'Complete structural analysis and engineering drawings', image: '/images/structural-designs/SD-1.jpg', route: '/plans/structural' },
-  { type: 'vr', title: 'VR Experiences', description: 'Immersive virtual reality architectural experiences', image: encodeURI('/images/3D-Plans/Residential Building jpg 1.jpg'), route: '/vr-experience' }
+  { type: 'vr', title: 'VR Experiences', description: 'Immersive virtual reality architectural experiences', image: '/images/VR/vr-experience.webp', route: '/vr-experience' }
   ];
 
   return (

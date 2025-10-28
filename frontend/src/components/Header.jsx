@@ -31,8 +31,7 @@ const Header = () => {
   const navigation = [
     { name: 'Home', href: '/', icon: '🏠' },
     { name: 'About', href: '/about', icon: 'ℹ️' },
-    { name: 'Services', href: '/explore', icon: '📋' },
-    { name: 'Portfolio', href: '/', icon: '🎨' },
+    { name: 'Explore', href: '/explore', icon: '📋' },
     { name: 'Contact', href: '/contact', icon: '📞' }
   ];
 

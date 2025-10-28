@@ -15,7 +15,7 @@ const Services = () => {
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-light mb-4">
-            Services
+            Explore
           </h2>
           <p className="text-base text-gray-600 max-w-2xl mx-auto">
             From concept to construction

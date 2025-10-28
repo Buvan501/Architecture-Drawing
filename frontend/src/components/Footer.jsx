@@ -29,9 +29,9 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16">
           {/* Company Info */}
           <div>
-            <h3 className="text-lg font-medium mb-4">Architectural Drawings</h3>
+            <h3 className="text-lg font-medium mb-4">De-Zine Cube</h3>
             <p className="text-sm text-gray-400 leading-relaxed mb-6">
-              Creating innovative architectural solutions
+              Design your Dream Space
             </p>
             <div className="flex space-x-4">
               {socialLinks.map((social) => (
@@ -67,9 +67,9 @@ const Footer = () => {
           <div>
             <h4 className="text-sm font-medium mb-4 uppercase tracking-wider">Contact</h4>
             <div className="space-y-3 text-sm text-gray-400">
-              <p>+91 98765 43210</p>
-              <p>info@archplans.com</p>
-              <p>Mumbai, India</p>
+              <p>+91 70104 89833</p>
+              <p>dezinecube06@gmail.com</p>
+              <p>Salem, India</p>
             </div>
           </div>
         </div>
@@ -77,11 +77,11 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-            <p>&copy; 2025 Architectural Drawings</p>
-            <div className="flex space-x-8 mt-4 md:mt-0">
+            <p>&copy; 2025 De-Zine Cube</p>
+            {/* <div className="flex space-x-8 mt-4 md:mt-0">
               <a href="#" className="hover:text-white transition-colors">Privacy</a>
               <a href="#" className="hover:text-white transition-colors">Terms</a>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

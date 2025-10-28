@@ -17,7 +17,7 @@ const Contact = () => {
   };
 
   const contactInfo = [
-    { title: 'BHARATH G', details: '+91 81898 41925' },
+    { title: 'BHARATH G', details: '+91 81898 41925', email: 'jerrybharath342@gmail.com' },
     { title: 'DHARSHINI C', details: '+91 63851 41015', email: 'dharshinichandru.04@gmail.com' },
     { title: 'DHEESHITH J B', details: '+91 70104 89833', email: 'jbdheeshith27@gmail.com' },
     { title: 'NITHISH KANNAN P C', details: '+91 89035 36812', email: 'nithishkannanpc@gmail.com' },

@@ -142,7 +142,7 @@ const PlansPage = () => {
     const typeMap = {
       '2d': '2D Plans',
       '3d': '3D Plans', 
-      'elevation': 'Elevation',
+      'elevation': 'Front Elevation',
       'structural': 'Structural Designs',
       'vr': 'VR Plans'
     };
@@ -340,53 +340,7 @@ const PlansPage = () => {
           '/images/structural-designs/SD-4.jpg'
         ], 'extra-struct')}
 
-        {/* Loading State */}
-        {loading && (
-          <div className="flex justify-center py-12">
-            <div className="w-6 h-6 border-2 border-gray-300 border-t-black rounded-full animate-spin"></div>
-          </div>
-        )}
 
-        {/* Plans Grid */}
-        {!loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredPlans.map((plan) => (
-              <div
-                key={plan.id}
-                className="group border border-gray-200 overflow-hidden hover:border-black transition-colors"
-              >
-                <div className="relative overflow-hidden aspect-[4/3]">
-                  <ImageWithLoading
-                    src={plan.image_path || '/images/Placeholder/placeholder.svg'}
-                    alt={plan.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-                
-                <div className="p-6">
-                  <h3 className="text-lg font-medium text-black mb-2">
-                    {plan.title}
-                  </h3>
-                  <p className="text-sm text-gray-500 mb-4 line-clamp-2">
-                    {plan.description}
-                  </p>
-                  
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-sm text-gray-500">{plan.area || 'N/A'}</span>
-                    <span className="text-sm font-medium text-black">{plan.price}</span>
-                  </div>
-                  
-                  <button
-                    onClick={() => openModal(plan)}
-                    className="w-full py-2.5 px-4 bg-black text-white text-sm font-medium hover:bg-gray-800 transition-colors"
-                  >
-                    View Details
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
 
         {/* Empty State
         {!loading && filteredPlans.length === 0 && (

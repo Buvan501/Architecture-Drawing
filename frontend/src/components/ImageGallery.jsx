@@ -22,7 +22,7 @@ const ImageGallery = () => {
   { src: '/images/3D-Plans/santhosh-render-with-ganesh-3.jpg', title: 'Premium Home Design', category: '3D Visualization' }
     ],
   'Elevation': [
-      { src: encodeURI('/images/Elevation/Hotel project.jpg'), title: 'Hotel Project Elevation', category: 'Elevation Design' },
+      { src: '/images/Elevation/front-elevation-main.jpg', title: 'Modern Front Elevation', category: 'Elevation Design' },
       { src: encodeURI('/images/Elevation/Hotel project.jpg 2.jpg'), title: 'Hotel Complex Elevation', category: 'Elevation Design' },
       { src: encodeURI('/images/Elevation/Hotel project.jpg3.jpg'), title: 'Hotel Building Elevation', category: 'Elevation Design' },
       { src: encodeURI('/images/Elevation/Office Building.jpg'), title: 'Modern Office Elevation', category: 'Elevation Design' },

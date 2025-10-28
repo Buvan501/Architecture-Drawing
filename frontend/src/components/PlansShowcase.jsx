@@ -28,7 +28,7 @@ const PlansShowcase = () => {
       ]
     },
     'Elevation': {
-      title: 'Elevation',
+      title: 'Front Elevation',
       description: 'Stunning facade designs and architectural elevations',
       icon: '🏢',
   plans: [ { image: '/images/Elevation/RB.jpg', title: 'Modern Building Elevation', area: '2,800 sq ft', price: '₹2,200', features: ['Facade Design', 'Material Selection', 'Color Coordination'] } ]
@@ -82,48 +82,7 @@ const PlansShowcase = () => {
           ))}
         </div>
 
-        {/* Plans Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {planCategories[activeCategory]?.plans.map((plan, index) => (
-            <div
-              key={index}
-              className="group border border-gray-200 overflow-hidden hover:border-black transition-colors"
-            >
-              <div className="relative overflow-hidden aspect-[4/3]">
-                <ImageWithLoading
-                  src={plan.image}
-                  alt={plan.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              
-              <div className="p-6">
-                <h3 className="text-lg font-medium text-black mb-2">
-                  {plan.title}
-                </h3>
-                
-                <div className="flex items-center justify-between mb-4 text-sm text-gray-500">
-                  <span>{plan.area}</span>
-                  <span className="font-medium">{plan.price}</span>
-                </div>
 
-                <div className="mb-4">
-                  <ul className="space-y-1">
-                    {plan.features.map((feature, idx) => (
-                      <li key={idx} className="text-xs text-gray-500">
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                
-                <button className="w-full py-2.5 px-4 bg-black text-white text-sm font-medium hover:bg-gray-800 transition-colors">
-                  View Details
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
 
         {/* Call to Action */}
         <div className="text-center">

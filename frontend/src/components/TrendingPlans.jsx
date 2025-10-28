@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import Modal from './Modal';
 import ImageWithLoading from './ImageWithLoading';
 
 const tabs = [
@@ -42,13 +41,6 @@ const planData = {
 
 const TrendingPlans = () => {
   const [activeTab, setActiveTab] = useState('Structural designs');
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState(null);
-
-  const openModal = (plan) => {
-    setSelectedPlan(plan);
-    setModalOpen(true);
-  };
 
   return (
     <section className="py-20 bg-black text-white">
@@ -98,17 +90,10 @@ const TrendingPlans = () => {
                 <h3 className="text-lg font-medium text-black mb-2">
                   {plan.title}
                 </h3>
-                <div className="flex items-center justify-between mb-4 text-sm text-gray-500">
+                <div className="flex items-center justify-between text-sm text-gray-500">
                   <span>{plan.area}</span>
                   <span className="font-medium">{plan.price}</span>
                 </div>
-                
-                <button
-                  onClick={() => openModal(plan)}
-                  className="w-full py-2.5 px-4 bg-black text-white text-sm font-medium hover:bg-gray-800 transition-colors"
-                >
-                  View Details
-                </button>
               </div>
             </div>
           ))}
@@ -121,15 +106,6 @@ const TrendingPlans = () => {
           </button>
         </div>
       </div>
-      
-      <Modal 
-        isOpen={modalOpen} 
-        onClose={() => setModalOpen(false)} 
-        image={selectedPlan?.image}
-        title={selectedPlan?.title}
-        type={selectedPlan?.type}
-        area={selectedPlan?.area}
-      />
     </section>
   );
 };

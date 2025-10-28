@@ -62,9 +62,9 @@ const Contact = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="max-w-4xl mx-auto">
           {/* Contact Form */}
-          <div className="bg-white border border-gray-200 p-8">
+          <div className="bg-white border border-gray-200 p-8 mb-20">
             <h2 className="text-2xl font-medium mb-6 text-black">Send us a Message</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -150,40 +150,45 @@ const Contact = () => {
             </form>
           </div>
 
-          {/* Contact Information */}
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-medium mb-6 text-black">Contact Information</h2>
-              <p className="text-base text-gray-600 mb-8">
-                We're here to help you bring your architectural vision to life.
+          {/* Team Members Section */}
+          <div>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-light mb-4">Our Team</h2>
+              <p className="text-base text-gray-600 max-w-2xl mx-auto">
+                Meet the experts who will bring your vision to life
               </p>
             </div>
-
-            <div className="space-y-6">
-              {contactInfo.map((info) => (
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[
+                { name: 'Rajesh Kumar', role: 'Lead Architect', email: 'rajesh@archplans.com', phone: '+91 98765 43210' },
+                { name: 'Priya Sharma', role: 'Senior Designer', email: 'priya@archplans.com', phone: '+91 98765 43211' },
+                { name: 'Amit Patel', role: 'Structural Engineer', email: 'amit@archplans.com', phone: '+91 98765 43212' },
+                { name: 'Sneha Reddy', role: '3D Specialist', email: 'sneha@archplans.com', phone: '+91 98765 43213' },
+                { name: 'Vikram Singh', role: 'Project Manager', email: 'vikram@archplans.com', phone: '+91 98765 43214' },
+                { name: 'Kavya Menon', role: 'Design Consultant', email: 'kavya@archplans.com', phone: '+91 98765 43215' }
+              ].map((person, index) => (
                 <div
-                  key={info.title}
-                  className="flex items-start space-x-4 p-6 border border-gray-200 hover:border-black transition-colors"
+                  key={index}
+                  className="border border-gray-200 p-6 hover:border-black transition-colors"
                 >
-                  <div className="w-10 h-10 bg-black text-white flex items-center justify-center text-sm font-medium">
-                    {info.title.charAt(0)}
+                  <div className="mb-4">
+                    <div className="w-16 h-16 bg-gray-200 flex items-center justify-center text-2xl font-medium text-gray-600 mb-4">
+                      {person.name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <h3 className="text-xl font-medium text-black mb-1">{person.name}</h3>
+                    <p className="text-sm text-gray-500">{person.role}</p>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-medium text-black mb-1">{info.title}</h3>
-                    <p className="text-base font-medium text-black mb-1">{info.details}</p>
-                    <p className="text-sm text-gray-500">{info.description}</p>
+                  <div className="space-y-2">
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Email:</span> {person.email}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Phone:</span> {person.phone}
+                    </p>
                   </div>
                 </div>
               ))}
-            </div>
-
-            {/* Quick Response Promise */}
-            <div className="bg-black text-white p-6">
-              <h3 className="text-lg font-medium mb-2">Quick Response Promise</h3>
-              <p className="text-sm text-gray-300">
-                We guarantee a response within 24 hours. For urgent projects, 
-                call us directly for immediate assistance.
-              </p>
             </div>
           </div>
         </div>

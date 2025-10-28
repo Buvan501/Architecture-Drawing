@@ -16,7 +16,6 @@
   "dependencies": {
     "axios": "^1.12.2",
     "framer-motion": "^12.23.24",
-    "react-toastify": "^9.1.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-infinite-scroll-component": "^6.1.0",
@@ -40,5 +39,4 @@
   "overrides": {
     "vite": "npm:rolldown-vite@7.1.14"
   }
-
 }

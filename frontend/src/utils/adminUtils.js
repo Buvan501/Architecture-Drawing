@@ -2,33 +2,30 @@ export const validateForm = (form) => {
   const requiredFields = ['type', 'title', 'price', 'description'];
   for (const field of requiredFields) {
     if (!form[field]) {
-      return { valid: false, message: `Please fill in the ${field} field.` };
+      alert(`Please fill in the ${field} field.`);
+      return false;
     }
   }
-  return { valid: true };
+  return true;
 };
 
 export const handleApiError = (error) => {
   console.error('API Error:', error);
-  // Try to derive a friendly message
-  const message = error?.response?.data?.error || error?.message || 'An error occurred while processing your request.';
-  return message;
+  alert('An error occurred while processing your request. Please try again later.');
 };
 
 export const getFilteredPlans = (plans, searchTerm, filterType) => {
-  const lowerCaseSearchTerm = (searchTerm || '').toLowerCase();
+  const lowerCaseSearchTerm = searchTerm.toLowerCase();
   return plans.filter(plan => {
-    const title = (plan.title || '').toLowerCase();
-    const description = (plan.description || '').toLowerCase();
     const matchesSearch =
-      title.includes(lowerCaseSearchTerm) || description.includes(lowerCaseSearchTerm);
+      plan.title.toLowerCase().includes(lowerCaseSearchTerm) ||
+      plan.description.toLowerCase().includes(lowerCaseSearchTerm);
     const matchesFilter = filterType === 'all' || plan.type === filterType;
     return matchesSearch && matchesFilter;
   });
 };
 
-export const getPaginatedPlans = (plans, searchTerm, filterType, currentPage, itemsPerPage) => {
-  const filtered = getFilteredPlans(plans, searchTerm, filterType);
+export const getPaginatedPlans = (plans, currentPage, itemsPerPage) => {
   const startIndex = (currentPage - 1) * itemsPerPage;
-  return filtered.slice(startIndex, startIndex + itemsPerPage);
+  return plans.slice(startIndex, startIndex + itemsPerPage);
 };

@@ -30,12 +30,9 @@ const Header = () => {
 
   const navigation = [
     { name: 'Home', href: '/', icon: '🏠' },
-    { name: '2D Plans', href: '/plans/2d', icon: '📋' },
-    { name: '3D Plans', href: '/plans/3d', icon: '🏗️' },
-    { name: 'Elevation', href: '/plans/elevation', icon: '🏢' },
-    { name: 'Structural', href: '/plans/structural', icon: '📐' },
-    { name: 'VR Plans', href: '/plans/vr', icon: '🥽' },
-    { name: 'Explore', href: '/explore', icon: '🔍' },
+    { name: 'About', href: '/about', icon: 'ℹ️' },
+    { name: 'Services', href: '/explore', icon: '📋' },
+    { name: 'Portfolio', href: '/', icon: '🎨' },
     { name: 'Contact', href: '/contact', icon: '📞' }
   ];
 
@@ -73,9 +70,9 @@ const Header = () => {
           </div>
 
           <div className="flex items-center space-x-6">
-            {/* User Authentication */}
+            {/* Desktop-auth links: hidden on small screens to avoid overlap */}
             {user ? (
-              <div className="flex items-center space-x-4">
+              <div className="hidden lg:flex items-center space-x-4">
                 <span className={`text-sm ${dark ? 'text-gray-300' : 'text-gray-600'}`}>
                   Welcome, {user.first_name}
                 </span>
@@ -114,17 +111,7 @@ const Header = () => {
                 </button>
               </div>
             ) : (
-              <div className="flex items-center space-x-4">
-                <Link
-                  to="/user-login"
-                  className={`text-sm font-normal transition-colors ${
-                    dark 
-                      ? 'text-gray-400 hover:text-white' 
-                      : 'text-gray-600 hover:text-black'
-                  }`}
-                >
-                  Login
-                </Link>
+              <div className="hidden lg:flex items-center space-x-4">
                 <Link
                   to="/admin-login"
                   className={`text-sm font-normal transition-colors ${
@@ -133,7 +120,7 @@ const Header = () => {
                       : 'text-gray-600 hover:text-black'
                   }`}
                 >
-                  Admin
+                  Login
                 </Link>
               </div>
             )}
@@ -189,6 +176,57 @@ const Header = () => {
                   {item.name}
                 </Link>
               ))}
+              {/* Mobile auth links */}
+              <div className="border-t pt-3 px-4">
+                {user ? (
+                  <div className="space-y-1">
+                    <div className={`text-sm ${dark ? 'text-gray-300' : 'text-gray-600'}`}>
+                      Welcome, {user.first_name}
+                    </div>
+                    {user.role === 'admin' ? (
+                      <Link
+                        to="/admin"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`block py-2 text-sm transition-colors ${
+                          dark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-black'
+                        }`}
+                      >
+                        Admin Panel
+                      </Link>
+                    ) : (
+                      <Link
+                        to="/user-dashboard"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`block py-2 text-sm transition-colors ${
+                          dark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-black'
+                        }`}
+                      >
+                        Dashboard
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
+                      className={`w-full text-left py-2 text-sm transition-colors ${
+                        dark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-black'
+                      }`}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <Link
+                      to="/admin-login"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`block py-2 text-sm transition-colors ${
+                        dark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-black'
+                      }`}
+                    >
+                      Login
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

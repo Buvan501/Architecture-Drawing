@@ -60,7 +60,6 @@ const ImageWithLoading = ({
       <motion.img
         src={src}
         alt={alt}
-        loading={props.loading || 'lazy'}
         className={`${className} ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
         onLoad={handleLoad}
         onError={handleError}

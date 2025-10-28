@@ -1,15 +1,11 @@
 import axios from 'axios';
 
-const getBaseUrl = () => {
-  if (typeof window === 'undefined') return 'http://localhost:5000/api';
-  const host = window.location.hostname;
-  // Use relative /api in production so Hosting rewrites can proxy to backend
-  if (host === 'localhost' || host === '127.0.0.1') return 'http://localhost:5000/api';
-  return '/api';
-};
+// Prefer an environment-configured API base URL (Vite exposes VITE_* vars via import.meta.env)
+// Fallback to localhost:8080 which is the backend default in `backend/app.py`.
+const BASE = import.meta?.env?.VITE_API_BASE_URL || 'http://localhost:8080/api';
 
 const api = axios.create({
-  baseURL: getBaseUrl(),
+  baseURL: BASE,
 });
 
 api.interceptors.request.use((config) => {
@@ -24,19 +20,6 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // simple retry logic for transient network/server errors
-    const config = error.config || {};
-    config.__retryCount = config.__retryCount || 0;
-    const maxRetries = 2;
-
-    const shouldRetry = !error.response || (error.response.status >= 500 && config.__retryCount < maxRetries);
-
-    if (shouldRetry) {
-      config.__retryCount += 1;
-      const delay = 200 * Math.pow(2, config.__retryCount);
-      return new Promise((resolve) => setTimeout(resolve, delay)).then(() => api(config));
-    }
-
     if (error.response?.status === 401) {
       // Token expired or invalid
       localStorage.removeItem('token');

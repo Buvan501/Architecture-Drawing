@@ -21,7 +21,19 @@ const ImageGallery = () => {
   { src: '/images/3D-Plans/santhosh-render-with-ganesh-2.jpg', title: 'Luxury Villa Exterior', category: '3D Visualization' },
   { src: '/images/3D-Plans/santhosh-render-with-ganesh-3.jpg', title: 'Premium Home Design', category: '3D Visualization' }
     ],
-  'Elevation': [ { src: '/images/Elevation/RB.jpg', title: 'Modern Building Elevation', category: 'Elevation Design' } ],
+  'Elevation': [
+      { src: encodeURI('/images/Elevation/Hotel project.jpg'), title: 'Hotel Project Elevation', category: 'Elevation Design' },
+      { src: encodeURI('/images/Elevation/Hotel project.jpg 2.jpg'), title: 'Hotel Complex Elevation', category: 'Elevation Design' },
+      { src: encodeURI('/images/Elevation/Hotel project.jpg3.jpg'), title: 'Hotel Building Elevation', category: 'Elevation Design' },
+      { src: encodeURI('/images/Elevation/Office Building.jpg'), title: 'Modern Office Elevation', category: 'Elevation Design' },
+      { src: encodeURI('/images/Elevation/Office Building1.jpg'), title: 'Office Complex Elevation', category: 'Elevation Design' },
+      { src: encodeURI('/images/Elevation/Office Building2.jpg'), title: 'Corporate Office Elevation', category: 'Elevation Design' },
+      { src: encodeURI('/images/Elevation/Office Building3.jpg'), title: 'Business Tower Elevation', category: 'Elevation Design' },
+      { src: encodeURI('/images/Elevation/RB.jpg'), title: 'Residential Building Elevation', category: 'Elevation Design' },
+      { src: encodeURI('/images/Elevation/Residential Building jpg 1.jpg'), title: 'Residential Complex Elevation 1', category: 'Elevation Design' },
+      { src: encodeURI('/images/Elevation/Residential Building jpg 2.jpg'), title: 'Residential Complex Elevation 2', category: 'Elevation Design' },
+      { src: encodeURI('/images/Elevation/Residential Building jpg 3.jpg'), title: 'Residential Complex Elevation 3', category: 'Elevation Design' }
+    ],
     'Structural designs': [
   { src: '/images/structural-designs/SD-1.jpg', title: 'Foundation Design', category: 'Structural Engineering' },
   { src: '/images/structural-designs/SD-2.jpg', title: 'Beam Layout Plan', category: 'Structural Engineering' },
@@ -29,9 +41,12 @@ const ImageGallery = () => {
   { src: '/images/structural-designs/SD-4.jpg', title: 'Reinforcement Plan', category: 'Structural Engineering' }
     ],
     '2D-Plans': [
-  { src: '/images/Plans/4358316.jpg', title: 'Floor Plan Design', category: '2D Floor Plans' },
-  { src: '/images/Plans/4a396338-2b0e-494d-b267-599c8b0a2443.jpeg', title: 'Architectural Plan', category: '2D Floor Plans' },
-  { src: '/images/Plans/free-photo-view-of-3d-house-model.jpeg', title: 'House Model View', category: '2D Floor Plans' }
+      { src: encodeURI('/images/2D-Plans/2D plan (30_X37_)_.jpg'), title: '2D Floor Plan 30x37', category: '2D Floor Plans' },
+      { src: encodeURI('/images/2D-Plans/2D plan (35_X29_).jpg'), title: '2D Floor Plan 35x29', category: '2D Floor Plans' },
+      { src: encodeURI('/images/2D-Plans/Screenshot 2025-10-27 230045.png'), title: '2D Architectural Plan 1', category: '2D Floor Plans' },
+      { src: encodeURI('/images/2D-Plans/Screenshot 2025-10-27 230105.png'), title: '2D Architectural Plan 2', category: '2D Floor Plans' },
+      { src: encodeURI('/images/2D-Plans/Screenshot 2025-10-27 230115.png'), title: '2D Architectural Plan 3', category: '2D Floor Plans' },
+      { src: encodeURI('/images/2D-Plans/Screenshot 2025-10-27 230128.png'), title: '2D Architectural Plan 4', category: '2D Floor Plans' }
     ]
   };
 
@@ -89,10 +104,7 @@ const ImageGallery = () => {
                 <h3 className="text-lg font-medium text-black mb-2">
                   {image.title}
                 </h3>
-                <p className="text-sm text-gray-500 mb-4">{image.category}</p>
-                <button className="w-full py-2.5 px-4 bg-black text-white text-sm font-medium hover:bg-gray-800 transition-colors">
-                  View Details
-                </button>
+                <p className="text-sm text-gray-500">{image.category}</p>
               </div>
             </div>
           ))}

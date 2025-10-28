@@ -1,13 +1,18 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Hero = () => {
+  const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
-  // Use a small hero slideshow of 3D plan renders copied into public/images/3D-Plans
+  // Use updated placeholder images for hero slideshow
   const heroImages = [
-    '/images/3D-Plans/hotel-project.jpg',
-    '/images/3D-Plans/office-building.jpg',
-    '/images/3D-Plans/residential-building-jpg-1.jpg'
+    encodeURI('/images/Placeholder/4358316.jpg'),
+    encodeURI('/images/Placeholder/4a396338-2b0e-494d-b267-599c8b0a2443.jpeg'),
+    encodeURI('/images/Placeholder/Free Photo _ View of 3d house model.jpeg'),
+    encodeURI('/images/Placeholder/WhatsApp Image 2025-10-26 at 19.56.09_d0c1f69d.jpg'),
+    encodeURI('/images/Placeholder/WhatsApp Image 2025-10-26 at 19.56.11_d4c48560.jpg'),
+    encodeURI('/images/Placeholder/WhatsApp Image 2025-10-26 at 19.56.11_f7390364.jpg')
   ];
 
   useEffect(() => {
@@ -48,14 +53,27 @@ const Hero = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <button className="px-8 py-3 bg-white text-black text-sm font-medium hover:bg-gray-100 transition-colors">
-              Explore Portfolio
-            </button>
-            <button className="px-8 py-3 bg-transparent text-white text-sm font-medium border border-white hover:bg-white hover:text-black transition-colors">
-              Get Started
+            <button onClick={() => navigate('/explore')} className="px-8 py-3 bg-white text-black text-sm font-medium hover:bg-gray-100 transition-colors">
+              Explore
             </button>
           </div>
         </div>
+      </div>
+      
+      {/* Dot Navigation */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex gap-2">
+        {heroImages.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentImageIndex(index)}
+            className={`w-2 h-2 rounded-full transition-all ${
+              currentImageIndex === index 
+                ? 'bg-white w-8' 
+                : 'bg-white/50 hover:bg-white/75'
+            }`}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
       </div>
     </div>
   );

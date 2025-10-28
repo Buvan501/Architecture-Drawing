@@ -1,8 +1,6 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
-import { useAuth } from '../contexts/AuthContext';
-import { toast } from 'react-toastify';
 
 const AdminLogin = () => {
   const [form, setForm] = useState({
@@ -12,7 +10,6 @@ const AdminLogin = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,19 +17,35 @@ const AdminLogin = () => {
     setError('');
 
     try {
-      const response = await api.post('/admin/login', {
-        username: form.username,
-        password: form.password
-      });
-      
-  // Use context login so all components update
-  login({ token: response.data.access_token, user: response.data.user });
-  navigate('/admin');
-  toast.success('Welcome back!');
+      // Try admin login first
+      try {
+        const response = await api.post('/admin/login', {
+          username: form.username,
+          password: form.password
+        });
+        
+        localStorage.setItem('token', response.data.access_token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        
+        // Navigate based on role
+        if (response.data.user.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/user-dashboard');
+        }
+      } catch (adminErr) {
+        // If admin login fails, try user login
+        const response = await api.post('/user/login', {
+          username: form.username,
+          password: form.password
+        });
+        
+        localStorage.setItem('token', response.data.access_token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        navigate('/user-dashboard');
+      }
     } catch (err) {
-  const message = err.response?.data?.error || 'Invalid admin credentials';
-  setError(message);
-  toast.error(message);
+      setError('Invalid username or password');
     }
     setLoading(false);
   };
@@ -42,9 +55,9 @@ const AdminLogin = () => {
       <div className="max-w-md w-full">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-light mb-2">Admin Login</h1>
+          <h1 className="text-3xl font-light mb-2">Login</h1>
           <p className="text-sm text-gray-600">
-            Access the admin dashboard to manage plans and settings
+            Sign in to access your account
           </p>
         </div>
 
@@ -96,28 +109,22 @@ const AdminLogin = () => {
                   Signing in...
                 </div>
               ) : (
-                'Sign In as Admin'
+                'Sign In'
               )}
             </button>
           </form>
 
-          {/* User login link */}
+          {/* Link to register */}
           <div className="mt-6 text-center">
-            <Link
-              to="/user-login"
-              className="text-sm text-gray-600 hover:text-black transition-colors"
-            >
-              User Login / Register
-            </Link>
-          </div>
-
-          {/* Demo credentials */}
-          <div className="mt-6 p-4 bg-gray-50 border border-gray-200">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Demo Credentials:</h4>
-            <div className="text-xs text-gray-600 space-y-1">
-              <div>Username: <span className="font-mono">admin</span></div>
-              <div>Password: <span className="font-mono">admin123</span></div>
-            </div>
+            <p className="text-sm text-gray-600">
+              Don't have an account?{' '}
+              <button
+                onClick={() => navigate('/user-login')}
+                className="text-black font-medium hover:underline"
+              >
+                Register
+              </button>
+            </p>
           </div>
         </div>
       </div>

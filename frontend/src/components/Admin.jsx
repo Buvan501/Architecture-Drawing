@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { validateForm, handleApiError, getFilteredPlans, getPaginatedPlans } from '../utils/adminUtils';
-import { toast } from 'react-toastify';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import Pagination from '../components/common/Pagination';
 
@@ -13,8 +12,6 @@ const Admin = () => {
   const [analytics, setAnalytics] = useState({});
   const [form, setForm] = useState({ type: '', title: '', price: '', description: '', area: '', features: '' });
   const [file, setFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -31,7 +28,7 @@ const Admin = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
-      toast.error('You are not authorized to access this page. Please log in.');
+      alert('You are not authorized to access this page. Please log in.');
       navigate('/admin-login');
     } else {
       // Optionally, verify the token with the server
@@ -51,8 +48,7 @@ const Admin = () => {
       setAnalytics(analyticsRes.data.by_type || analyticsRes.data);
       setSettings(settingsRes.data);
     } catch (error) {
-      const msg = handleApiError(error);
-      toast.error(msg);
+      handleApiError(error);
     }
     setLoading(false);
   };
@@ -68,29 +64,18 @@ const Admin = () => {
     formData.append('description', form.description);
     formData.append('area', form.area);
     formData.append('features', form.features);
-  if (file) formData.append('image', file);
+    if (file) formData.append('image', file);
 
     try {
       if (editing) {
-        await api.put(`/plans/${editing}`, formData, {
-          onUploadProgress: (progressEvent) => {
-            const percent = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
-            setUploadProgress(percent);
-          }
-        });
+        await api.put(`/plans/${editing}`, formData);
       } else {
-        await api.post('/plans', formData, {
-          onUploadProgress: (progressEvent) => {
-            const percent = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
-            setUploadProgress(percent);
-          }
-        });
+        await api.post('/plans', formData);
       }
       await fetchData();
       resetForm();
     } catch (error) {
-      const msg = handleApiError(error);
-      toast.error(msg);
+      handleApiError(error);
     }
     setLoading(false);
   };
@@ -99,8 +84,6 @@ const Admin = () => {
     setForm({ type: '', title: '', price: '', description: '', area: '', features: '' });
     setFile(null);
     setEditing(null);
-    setPreviewUrl(null);
-    setUploadProgress(0);
   };
 
   const handleEdit = (plan) => {
@@ -123,8 +106,7 @@ const Admin = () => {
         await api.delete(`/plans/${id}`);
         await fetchData();
       } catch (error) {
-        const msg = handleApiError(error);
-        toast.error(msg);
+        handleApiError(error);
       }
       setLoading(false);
     }
@@ -132,15 +114,14 @@ const Admin = () => {
 
   const handleBulkDelete = async () => {
     if (selectedPlans.length === 0) return;
-      if (window.confirm(`Are you sure you want to delete ${selectedPlans.length} plans? This action cannot be undone.`)) {
+    if (window.confirm(`Are you sure you want to delete ${selectedPlans.length} plans? This action cannot be undone.`)) {
       setLoading(true);
       try {
         await api.post('/plans/bulk-delete', { ids: selectedPlans });
         setSelectedPlans([]);
         await fetchData();
       } catch (error) {
-        const msg = handleApiError(error);
-        toast.error(msg);
+        handleApiError(error);
       }
       setLoading(false);
     }
@@ -365,37 +346,12 @@ const Admin = () => {
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Image</label>
-                  <div>
-                    <input 
-                      type="file" 
-                      onChange={(e) => {
-                        const f = e.target.files[0];
-                        setFile(f);
-                        if (f) {
-                          const url = URL.createObjectURL(f);
-                          setPreviewUrl(url);
-                        } else {
-                          setPreviewUrl(null);
-                        }
-                      }}
-                      className="w-full p-3 border border-gray-200 focus:border-black focus:outline-none" 
-                      accept="image/*"
-                    />
-                    {previewUrl && (
-                      <div className="mt-3">
-                        <p className="text-sm text-gray-600 mb-2">Image preview:</p>
-                        <img src={previewUrl} alt="preview" className="w-48 h-32 object-cover border border-gray-200" />
-                      </div>
-                    )}
-                    {uploadProgress > 0 && uploadProgress < 100 && (
-                      <div className="mt-2">
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-black h-2 rounded-full" style={{ width: `${uploadProgress}%` }} />
-                        </div>
-                        <p className="text-xs text-gray-600 mt-1">Uploading: {uploadProgress}%</p>
-                      </div>
-                    )}
-                  </div>
+                  <input 
+                    type="file" 
+                    onChange={(e) => setFile(e.target.files[0])} 
+                    className="w-full p-3 border border-gray-200 focus:border-black focus:outline-none" 
+                    accept="image/*"
+                  />
                 </div>
                 <div className="md:col-span-2 flex space-x-4">
                   <button 

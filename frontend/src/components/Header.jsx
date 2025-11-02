@@ -42,6 +42,11 @@ const Header = () => {
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <Link to="/" className="flex items-center space-x-3">
+                <img
+                  src="/images/Placeholder/logodezine.png"
+                  alt="De-Zine Cube"
+                  className="h-20 w-20 object-contain"
+                />
                 <h1 className={`text-lg font-medium ${dark ? 'text-white' : 'text-black'}`}>
                   De-Zine Cube
                 </h1>

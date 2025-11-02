@@ -37,3 +37,40 @@ Notes
 Troubleshooting
 - If image URLs 404 after deploy, ensure the filenames were copied into `frontend/public/images` and normalized (no trailing spaces). You can run the copy script again: `npm run copy-drawing-plans`.
 - If `firebase` CLI command not found and you prefer not to install globally, use `npx firebase` in commands.
+
+Google Search / Indexing (Search Console)
+
+1) Verify your site in Google Search Console
+
+   - Open https://search.google.com/search-console
+   - Add a property for your public URL (example: `https://dezinecube.web.app` or your custom domain).
+   - Choose a verification method (HTML file upload, HTML meta tag, or DNS record). The HTML meta tag option is simple:
+
+     - In Search Console pick "HTML tag" and copy the meta tag it gives you (it looks like: `<meta name="google-site-verification" content="XYZ" />`).
+     - Add that meta tag to the top of `frontend/index.html` inside the `<head>` and rebuild/deploy.
+
+2) Submit a sitemap
+
+   - After deployment, submit your sitemap URL in Search Console: e.g. `https://dezinecube.web.app/sitemap.xml` or `https://www.example.com/sitemap.xml`.
+   - I added a minimal `frontend/public/sitemap.xml` which will be deployed to `/sitemap.xml`. Replace the `loc` URL inside the sitemap if your hosted URL differs from `https://dezinecube.web.app/`.
+
+3) Robots
+
+   - I added `frontend/public/robots.txt` that allows all crawlers and points to `/sitemap.xml`.
+   - If you want to block specific paths, edit that file before deploying.
+
+4) Tips to improve listing for the search term "dezine cube"
+
+   - Use the brand name in the `<title>` and `<meta name="description">` (already added to `index.html`).
+   - Create an "About" page with the exact phrase and include structured data (Organization/LocalBusiness) and your contact details.
+   - Get a few backlinks (social profiles, directories, Google Business Profile). Backlinks and site authority greatly influence how soon you appear on search results.
+
+5) After changes
+
+   - Rebuild and deploy: `npm run deploy:firebase`
+   - In Search Console use "URL Inspection" → "Request indexing" for your home page and important pages.
+
+If you want, I can:
+ - Insert the Google verification meta tag for you (paste the verification `content` value here and I'll add it to `index.html`).
+ - Replace the sitemap/robots URLs with your exact public URL if you provide it.
+ - Add a small script to generate a sitemap from your routes if you have many pages.

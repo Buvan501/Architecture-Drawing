@@ -29,7 +29,14 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16">
           {/* Company Info */}
           <div>
-            <h3 className="text-lg font-medium mb-4">De-Zine Cube</h3>
+            <div className="flex items-center space-x-3 mb-4">
+              <img
+                src="/images/Placeholder/logodezine.png"
+                alt="De-Zine Cube"
+                className="h-20 w-20 object-contain"
+              />
+              <h3 className="text-lg font-medium">De-Zine Cube</h3>
+            </div>
             <p className="text-sm text-gray-400 leading-relaxed mb-6">
               Design your Dream Space
             </p>

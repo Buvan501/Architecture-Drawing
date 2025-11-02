@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://dezinecube.web.app/sitemap.xml
